@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using RabbitMQ.Client;
 
 namespace RabbitMQ_Profiller
 {
@@ -25,8 +26,8 @@ namespace RabbitMQ_Profiller
         public void ConfigureServices(IServiceCollection services)
         {
             // Infrastructure
-            //services.AddTransient(s => new ConnectionFactory { HostName = Configuration.GetConnectionString("RabbitMqHostName") });
-            //services.AddTransient<IBus, RabbitMqBus>();
+            services.AddTransient(s => new ConnectionFactory { HostName = Configuration.GetConnectionString("RabbitMq") });
+            services.AddSingleton<IMessageHandler, MessageHandler>();
             //services.AddDbContext<MyDatabaseContext>(b => b.UseSqlServer(Configuration.GetConnectionString("IntegrationServiceSqlServer")), ServiceLifetime.Transient);
 
 
@@ -35,9 +36,9 @@ namespace RabbitMQ_Profiller
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IApplicationLifetime applicationLifetime, IBus bus)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IApplicationLifetime applicationLifetime, IMessageHandler messageHandler)
         {
-            //applicationLifetime.ApplicationStopping.Register(() => OnShutdown(bus));
+            applicationLifetime.ApplicationStopping.Register(() => OnShutdown(messageHandler));
 
             //SubscribeEvents(bus);
 
@@ -52,9 +53,9 @@ namespace RabbitMQ_Profiller
            
         //}
 
-        //private void OnShutdown(IBus bus)
-        //{
-        //    bus.Close();
-        //}
+        private void OnShutdown(IMessageHandler bus)
+        {
+            bus.Close();
+        }
     }
 }

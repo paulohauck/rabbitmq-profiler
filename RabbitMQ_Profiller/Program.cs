@@ -20,6 +20,10 @@ namespace RabbitMQ_Profiller
                 .UseStartup<Startup>()
                 .Build();
 
+            var handler = (MessageHandler)host.Services.GetService(typeof(IMessageHandler));
+
+            handler.StartListening();
+
             host.Run();
         }
     }
