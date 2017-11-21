@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using Microsoft.AspNetCore.Hosting;
+
 using Microsoft.Extensions.Configuration;
 
 namespace RabbitMQ_Profiller
@@ -18,6 +19,7 @@ namespace RabbitMQ_Profiller
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
                 .UseStartup<Startup>()
+                
                 .Build();
 
             var handler = (MessageHandler)host.Services.GetService(typeof(IMessageHandler));
