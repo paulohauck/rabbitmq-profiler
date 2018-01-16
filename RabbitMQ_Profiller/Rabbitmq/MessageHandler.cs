@@ -1,7 +1,10 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using LiteDB;
+using Newtonsoft.Json.Linq;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 
@@ -49,6 +52,8 @@ namespace RabbitMQ_Profiller
                     try
                     {
                         var json = JObject.Parse(message);
+                        json.Add("AMQP_Exchange", ea.Exchange);
+                        json.Add("AMQP_ReceivedAt", DateTime.Now.ToString());
 
                         if (json.HasValues)
                         {
@@ -76,7 +81,29 @@ namespace RabbitMQ_Profiller
         {
             //var db = null;
             Console.WriteLine($"{ DateTime.Now } : Message Received: " +
-                $"\n \t {json.ToString()}");
+            $"\n \t {json.ToString()}");
+
+            using (var db = new LiteDatabase(@"MessageProfiller.db"))
+            {
+                var messages = db.GetCollection("messages");                
+                messages.Insert(new BsonDocument(ToDictionary(json)));
+            }
+        }
+
+        private Dictionary<string, BsonValue> ToDictionary(JToken token)
+        {
+            var dict = token.ToObject<Dictionary<string, BsonValue>>();
+            foreach (var item in dict.Where(x => x.Value.IsNull).ToList())
+            {
+                dict[item.Key] = new BsonValue(ToDictionary(token[item.Key]));
+            }
+
+            if (!dict.ContainsKey("_id"))
+            {
+                dict.Add("_id", Guid.NewGuid());
+            }
+
+            return dict;
         }
 
         public void Close()

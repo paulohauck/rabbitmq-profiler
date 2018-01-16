@@ -22,9 +22,9 @@ namespace RabbitMQ_Profiller
                 
                 .Build();
 
-            //var handler = (MessageHandler)host.Services.GetService(typeof(IMessageHandler));
+            var handler = (MessageHandler)host.Services.GetService(typeof(IMessageHandler));
 
-            //handler.StartListening();
+            handler.StartListening();
 
             host.Run();
         }

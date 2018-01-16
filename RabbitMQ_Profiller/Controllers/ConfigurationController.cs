@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 
 namespace RabbitMQ_Profiller.Controllers
 {
@@ -8,7 +9,8 @@ namespace RabbitMQ_Profiller.Controllers
     {
         public IActionResult GetIndex()
         {
-            return View();
+            var o = new JObject();
+            return Ok(o);
         }
     }
 }
